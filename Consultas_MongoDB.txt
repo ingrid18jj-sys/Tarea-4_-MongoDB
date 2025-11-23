@@ -1,0 +1,138 @@
+// Tarea 4 - Big Data - MongoDB
+// Ingrid Johana Angulo Fajardo - Grupo 97
+// Base de datos: colegioDB
+// Colección principal: estudiantes
+
+// ====================================================
+// 1. CONSULTAS BÁSICAS
+// ====================================================
+
+// 1.1 Inserción de un estudiante de prueba
+db.estudiantes.insertOne({
+  "Orden Priorización": 999,
+  "ETC": "BOGOTA",
+  "ESTADO": "MATRICULADO",
+  "INSTITUCION": "7 - COLEGIO GERMAN ARCINIEGAS (IED)",
+  "DOC": 1030634982,
+  "TIPODOC": "CC:CEDULA DE CIUDADANIA",
+  "APELLIDO1": "ANGULO",
+  "APELLIDO2": "FAJARDO",
+  "NOMBRE1": "INGRID",
+  "NOMBRE2": "JOHANA",
+  "CALENDARIO": "A",
+  "SECTOR": "OFICIAL",
+  "SEDE": "COL GERMÀN ARCINIEGAS (INS EDUC DIST)",
+  "JORNADA": "MAÑANA",
+  "GRADO_COD": 3,
+  "GRUPO": 302,
+  "GENERO": "FEMENINO",
+  "DISCAPACIDAD": "NO APLICA",
+  "BARRIO": "EL JAZMIN"
+});
+
+// 1.2 Selección (búsqueda por grado y jornada)
+// Estudiantes de grado 5 en jornada MAÑANA
+db.estudiantes.find({
+  GRADO_COD: 5,
+  JORNADA: "MAÑANA"
+});
+
+// 1.3 Actualización (cambio de jornada del estudiante de prueba)
+db.estudiantes.updateOne(
+  { DOC: 1030634982 },          // Filtro
+  { $set: { JORNADA: "TARDE" }} // Cambio
+);
+
+// 1.4 Eliminación (borrar el estudiante de prueba)
+db.estudiantes.deleteOne({
+  DOC: 1030634982
+});
+
+
+// ====================================================
+// 2. CONSULTAS CON FILTROS Y OPERADORES
+// ====================================================
+
+// 2.1 Consultas con filtros simples
+
+// Estudiantes del grupo 101
+db.estudiantes.find({
+  GRUPO: 101
+});
+
+// Estudiantes afiliados a "NUEVA EPS"
+db.estudiantes.find({
+  EPS: "NUEVA EPS"
+});
+
+
+// 2.2 Consultas con operadores
+
+// a) Buscar estudiantes de varios grados usando $in
+// Estudiantes de grados 1, 3 o 5
+db.estudiantes.find({
+  GRADO_COD: { $in: [1, 3, 5] }
+});
+
+// b) Buscar estudiantes de un grado mayor a 3 usando $gt
+// Estudiantes de grado mayor a 3 (es decir, 4 y 5)
+db.estudiantes.find({
+  GRADO_COD: { $gt: 3 }
+});
+
+// c) Buscar por apellido usando operador $regex
+// Estudiantes cuyo primer apellido contiene "LOPEZ"
+db.estudiantes.find({
+  APELLIDO1: { $regex: "LOPEZ", $options: "i" }
+});
+
+// d) Buscar estudiantes que cumplan una de varias condiciones usando $or
+// Estudiantes que estén en jornada MAÑANA o en grado 5
+db.estudiantes.find({
+  $or: [
+    { JORNADA: "MAÑANA" },
+    { GRADO_COD: 5 }
+  ]
+});
+
+
+// ====================================================
+// 3. CONSULTAS DE AGREGACIÓN (ESTADÍSTICAS)
+// ====================================================
+
+// 3.1 Contar estudiantes por grado
+db.estudiantes.aggregate([
+  {
+    $group: {
+      _id: "$GRADO_COD",            // Agrupar por grado
+      totalEstudiantes: { $sum: 1 } // Contar estudiantes en cada grado
+    }
+  }
+]);
+
+// 3.2 Contar estudiantes por jornada
+db.estudiantes.aggregate([
+  {
+    $group: {
+      _id: "$JORNADA",              // Agrupar por jornada
+      totalEstudiantes: { $sum: 1 } // Contar estudiantes en cada jornada
+    }
+  }
+]);
+
+// 3.3 Promedio de grado por jornada
+db.estudiantes.aggregate([
+  {
+    $group: {
+      _id: "$JORNADA",                 // Agrupar por jornada
+      promedioGrado: { $avg: "$GRADO_COD" } // Promedio del grado por jornada
+    }
+  }
+]);
+
+// 3.4 Conteo total de estudiantes
+db.estudiantes.aggregate([
+  {
+    $count: "totalEstudiantes" // Devuelve un solo documento con el total
+  }
+]);
